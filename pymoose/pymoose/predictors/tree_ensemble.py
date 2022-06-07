@@ -79,7 +79,7 @@ class TreeEnsemble(predictor.Predictor, metaclass=abc.ABCMeta):
     def post_transform(self, tree_scores, fixedpoint_dtype):
         pass
 
-    def forest_fn(self, x, fixedpoint_dtype):
+    def predictor_fn(self, x, fixedpoint_dtype):
         forest_scores = [
             tree(
                 x,
@@ -97,7 +97,7 @@ class TreeEnsemble(predictor.Predictor, metaclass=abc.ABCMeta):
         return list(map(pm.identity, forest_scores))
 
     def __call__(self, x, fixedpoint_dtype=utils.DEFAULT_FIXED_DTYPE):
-        tree_scores = self.forest_fn(x, fixedpoint_dtype=fixedpoint_dtype)
+        tree_scores = self.predictor_fn(x, fixedpoint_dtype=fixedpoint_dtype)
         return self.post_transform(tree_scores, fixedpoint_dtype=fixedpoint_dtype)
 
 
