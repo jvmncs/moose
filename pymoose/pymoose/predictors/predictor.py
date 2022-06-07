@@ -4,7 +4,7 @@ import pymoose as pm
 from pymoose.predictors import predictor_utils as utils
 
 
-class AesPredictor(metaclass=abc.ABCMeta):
+class Predictor(metaclass=abc.ABCMeta):
     def __init__(self):
         (
             (self.alice, self.bob, self.carole),
@@ -18,17 +18,6 @@ class AesPredictor(metaclass=abc.ABCMeta):
         return pm.cast(x, dtype=dtype, placement=plc)
 
     @classmethod
-    def handle_aes_input(cls, aes_key, aes_data, decryptor):
-        assert isinstance(aes_data.vtype, pm.AesTensorType)
-        assert aes_data.vtype.dtype.is_fixedpoint
-        assert isinstance(aes_key.vtype, pm.AesKeyType)
-
-        with decryptor:
-            aes_inputs = pm.decrypt(aes_key, aes_data)
-
-        return aes_inputs
-
-    @classmethod
     def handle_output(
         cls, prediction, prediction_handler, output_dtype=utils.DEFAULT_FLOAT_DTYPE
     ):
@@ -40,10 +29,6 @@ class AesPredictor(metaclass=abc.ABCMeta):
     @property
     def host_placements(self):
         return self.alice, self.bob, self.carole
-
-    @abc.abstractmethod
-    def aes_predictor_factory(self, *args, **kwargs):
-        pass
 
     def _standard_replicated_placements(self):
         alice = pm.host_placement("alice")

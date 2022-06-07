@@ -4,7 +4,7 @@ from enum import Enum
 import numpy as np
 
 import pymoose as pm
-from pymoose.predictors import aes_predictor
+from pymoose.predictors import predictor
 from pymoose.predictors import predictor_utils
 
 
@@ -15,7 +15,7 @@ class Activation(Enum):
     RELU = 4
 
 
-class NeuralNetwork(aes_predictor.AesPredictor):
+class NeuralNetwork(predictor.Predictor):
     def __init__(self, weights, biases, activations):
         super().__init__()
         self.weights = weights
@@ -63,23 +63,6 @@ class NeuralNetwork(aes_predictor.AesPredictor):
 
     def __call__(self, x, fixedpoint_dtype=predictor_utils.DEFAULT_FIXED_DTYPE):
         return self.neural_predictor_fn(x, fixedpoint_dtype)
-
-    def aes_predictor_factory(
-        self, fixedpoint_dtype=predictor_utils.DEFAULT_FIXED_DTYPE
-    ):
-        @pm.computation
-        def predictor(
-            aes_data: pm.Argument(
-                self.alice, vtype=pm.AesTensorType(dtype=fixedpoint_dtype)
-            ),
-            aes_key: pm.Argument(self.replicated, vtype=pm.AesKeyType()),
-        ):
-            x = self.handle_aes_input(aes_key, aes_data, decryptor=self.replicated)
-            with self.replicated:
-                y = self.neural_predictor_fn(x, fixedpoint_dtype)
-            return self.handle_output(y, prediction_handler=self.bob)
-
-        return predictor
 
     @classmethod
     def from_onnx(cls, model_proto):
